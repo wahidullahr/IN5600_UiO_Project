@@ -10,6 +10,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.os.SystemClock
 import android.provider.MediaStore
 import android.widget.Button
 import android.widget.ImageView
@@ -31,8 +32,11 @@ import retrofit2.Response
 import java.io.File
 import android.util.Base64
 import android.webkit.MimeTypeMap
+import android.widget.EditText
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.uioproject.CurrentUser.userId
+import org.w3c.dom.Text
 import java.io.ByteArrayOutputStream
 import java.io.FileOutputStream
 
@@ -44,6 +48,8 @@ class TakePhotoActivity : AppCompatActivity() {
     private lateinit var submitPhotoButton: Button
     private lateinit var imageView: ImageView
     private var photoUri: Uri? = null
+    private lateinit var descriptionPhoto: EditText
+    private lateinit var people: EditText
 
     companion object {
         private const val REQUEST_IMAGE_CAPTURE = 1
@@ -60,6 +66,9 @@ class TakePhotoActivity : AppCompatActivity() {
         editPhotoButton = findViewById(R.id.edit_photo_button)
         submitPhotoButton = findViewById(R.id.submit_photo_button)
         imageView = findViewById(R.id.photo_image_view)
+        descriptionPhoto = findViewById(R.id.des_photo)
+        people = findViewById(R.id.photo_people)
+
 
         capturePhotoButton.setOnClickListener {
             Log.d("TakePhotoActivity", "Capture Photo button clicked")
@@ -87,9 +96,15 @@ class TakePhotoActivity : AppCompatActivity() {
 
         submitPhotoButton.setOnClickListener {
             Log.d("TakePhotoActivity", "Submit Photo button clicked")
-            submitPhoto()
-        }
 
+            val descriptionOfPhoto = descriptionPhoto.text.toString()
+            val peopleInPhoto = people.text.toString()
+
+            Log.d("Description", descriptionOfPhoto)
+            Log.d("people in Photo", peopleInPhoto)
+            submitPhoto()
+
+        }
     }
 
     private fun takePhoto() {
@@ -117,7 +132,7 @@ class TakePhotoActivity : AppCompatActivity() {
             val photo = MultipartBody.Part.createFormData("photo", file.name, requestFile)
             val userId = CurrentUser.userId ?: return
             val tagId = CurrentUser.tagId ?: return
-            val fileName = file.name
+            val fileName = System.currentTimeMillis().toString()+".jpg"
             val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
             val baos = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
@@ -126,18 +141,19 @@ class TakePhotoActivity : AppCompatActivity() {
 
             val apiService = RetrofitClient.instance
 
-            apiService.uploadPhoto(photo, userId, tagId, "test.jpg", "base64Image")
+            apiService.uploadPhoto(photo, userId, tagId, fileName, "base64Image")
                 .enqueue(object : Callback<ResponseBody> {
                     override fun onResponse(
                         call: Call<ResponseBody>, response: Response<ResponseBody>
                     ) {
                         if (response.isSuccessful) {
-                            savePhotoToLocalStorage(uri)
+                            savePhotoToLocalStorage(uri,fileName)
                             Toast.makeText(
                                 this@TakePhotoActivity,
                                 "Photo uploaded successfully",
                                 Toast.LENGTH_SHORT
                             ).show()
+                            uploadTag(fileName)
                         } else {
                             Toast.makeText(
                                 this@TakePhotoActivity, "Failed to upload photo", Toast.LENGTH_SHORT
@@ -155,9 +171,43 @@ class TakePhotoActivity : AppCompatActivity() {
         }
     }
 
-    private fun savePhotoToLocalStorage(uri: Uri): File? {
+    private fun uploadTag(photoName: String) {
+        val userId = CurrentUser.userId ?: return
+        val tagId = CurrentUser.tagId ?: return
+        val apiService = RetrofitClient.instance
+
+        apiService.uploadTag(userId =userId, indexUpdateTag = "1", updateTagDes =descriptionPhoto.text.toString() , updateTagLoc ="oslo" , updateTagPho = photoName, newTagPeopleName = people.text.toString())
+            .enqueue(object : Callback<ResponseBody> {
+                override fun onResponse(
+                    call: Call<ResponseBody>, response: Response<ResponseBody>
+                ) {
+                    if (response.isSuccessful) {
+                        Toast.makeText(
+                            this@TakePhotoActivity,
+                            "Photo uploaded successfully",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            this@TakePhotoActivity, "Failed to upload photo", Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                    Toast.makeText(
+                        this@TakePhotoActivity, "Error: ${t.message}", Toast.LENGTH_SHORT
+                    ).show()
+                    t.printStackTrace()
+                }
+            })
+
+
+    }
+
+    private fun savePhotoToLocalStorage(uri: Uri,fileName:String): File? {
+
         val contentResolver: ContentResolver = contentResolver
-        val fileName = "${System.currentTimeMillis()}.jpg"
 
         /** open the user-picked file for reading */
         val inputStream = contentResolver.openInputStream(uri)

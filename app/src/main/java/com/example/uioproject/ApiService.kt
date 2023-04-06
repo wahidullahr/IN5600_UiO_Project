@@ -45,4 +45,15 @@ interface ApiService {
         @Query("tagId") tagId: String,
         @Query("newTag") newTag: String
     ): Call<ResponseBody>
+
+
+    @POST("postUpdateTag")
+    fun uploadTag(
+        @Query("userId") userId: String,
+        @Query("indexUpdateTag") indexUpdateTag: String,
+        @Query("updateTagDes") updateTagDes: String,
+        @Query("updateTagPho") updateTagPho: String,
+        @Query("updateTagLoc") updateTagLoc: String,
+        @Query("updateTagPeopleName") newTagPeopleName: String
+    ): Call<ResponseBody>
 }
