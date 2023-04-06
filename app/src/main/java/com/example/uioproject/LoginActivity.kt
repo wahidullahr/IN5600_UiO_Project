@@ -9,12 +9,10 @@ import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import com.example.uioproject.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.security.MessageDigest
-import kotlin.math.sign
 
 class LoginActivity : AppCompatActivity() {
 
@@ -67,7 +65,7 @@ class LoginActivity : AppCompatActivity() {
 
 
 
-                        val intent = Intent(this@LoginActivity, UserInfoActivity::class.java)
+                        val intent = Intent(this@LoginActivity, HomeActivity::class.java)
                         startActivity(intent)
                         finish()
                     } else {

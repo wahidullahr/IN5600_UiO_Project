@@ -3,11 +3,13 @@ package com.example.uioproject
 
 import android.Manifest
 import android.app.Activity
+import android.content.ContentResolver
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.widget.Button
 import android.widget.ImageView
@@ -28,9 +30,11 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
 import android.util.Base64
+import android.webkit.MimeTypeMap
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.io.ByteArrayOutputStream
+import java.io.FileOutputStream
 
 class TakePhotoActivity : AppCompatActivity() {
 
@@ -59,13 +63,22 @@ class TakePhotoActivity : AppCompatActivity() {
 
         capturePhotoButton.setOnClickListener {
             Log.d("TakePhotoActivity", "Capture Photo button clicked")
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_REQUEST_CODE)
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.CAMERA
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.CAMERA),
+                    CAMERA_PERMISSION_REQUEST_CODE
+                )
             } else {
                 takePhoto()
 
 
-        }}
+            }
+        }
 
         editPhotoButton.setOnClickListener {
             Log.d("TakePhotoActivity", "Edit Photo button clicked")
@@ -82,10 +95,10 @@ class TakePhotoActivity : AppCompatActivity() {
     private fun takePhoto() {
         val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
 
-            val photoFile = File.createTempFile("temp_photo", ".jpg", cacheDir)
-            photoUri = FileProvider.getUriForFile(this, "$packageName.fileprovider", photoFile)
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
-            startActivityForResult(intent, REQUEST_IMAGE_CAPTURE)
+        val photoFile = File.createTempFile("temp_photo", ".jpg", cacheDir)
+        photoUri = FileProvider.getUriForFile(this, "$packageName.fileprovider", photoFile)
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+        startActivityForResult(intent, REQUEST_IMAGE_CAPTURE)
 
     }
 
@@ -102,11 +115,9 @@ class TakePhotoActivity : AppCompatActivity() {
             val file = File(uri.path)
             val requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file)
             val photo = MultipartBody.Part.createFormData("photo", file.name, requestFile)
-            println("picture2")
             val userId = CurrentUser.userId ?: return
             val tagId = CurrentUser.tagId ?: return
             val fileName = file.name
-            println("picture3")
             val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
             val baos = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
@@ -115,12 +126,13 @@ class TakePhotoActivity : AppCompatActivity() {
 
             val apiService = RetrofitClient.instance
 
-            apiService.uploadPhoto(photo, userId, tagId, "test.txt", "base64Image")
+            apiService.uploadPhoto(photo, userId, tagId, "test.jpg", "base64Image")
                 .enqueue(object : Callback<ResponseBody> {
                     override fun onResponse(
                         call: Call<ResponseBody>, response: Response<ResponseBody>
                     ) {
                         if (response.isSuccessful) {
+                            savePhotoToLocalStorage(uri)
                             Toast.makeText(
                                 this@TakePhotoActivity,
                                 "Photo uploaded successfully",
@@ -143,7 +155,41 @@ class TakePhotoActivity : AppCompatActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    private fun savePhotoToLocalStorage(uri: Uri): File? {
+        val contentResolver: ContentResolver = contentResolver
+        val fileName = "${System.currentTimeMillis()}.jpg"
+
+        /** open the user-picked file for reading */
+        val inputStream = contentResolver.openInputStream(uri)
+
+        /** open the output-file */
+        val destinationFile = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), fileName)
+        val outputStream = FileOutputStream(destinationFile)
+        println(destinationFile)
+
+        /** copy the file contents */
+        val buffer = ByteArray(1024)
+        var len: Int
+        if (inputStream != null) {
+            while (inputStream.read(buffer).also { len = it } != -1) outputStream.write(
+                buffer,
+                0,
+                len
+            )
+
+        }
+        inputStream?.close()
+        outputStream.close()
+
+        /** The content of the [uri] are now copied into a temporary file */
+        return destinationFile
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
@@ -154,11 +200,12 @@ class TakePhotoActivity : AppCompatActivity() {
             }
         }
     }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
             imageView.setImageURI(photoUri)
-        println(photoUri)
+            println(photoUri)
         } else if (requestCode == UCROP_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             val resultUri = UCrop.getOutput(data!!)
             imageView.setImageURI(resultUri)

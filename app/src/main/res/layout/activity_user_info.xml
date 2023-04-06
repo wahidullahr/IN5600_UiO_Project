@@ -1,98 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="10dp"
-    android:background="#F5F5F5">
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
 
-    <TextView
+
+
+    <EditText
+        android:id="@+id/firstname_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginBottom="32dp"
-        android:text="Welcome!"
-        android:textSize="30sp"
-        android:textColor="#37474F"
-        android:textStyle="bold" />
 
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:hint="First Name" />
 
-    <Button
-        android:id="@+id/take_photo_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="16dp"
-        android:background="#546E7A"
-        android:drawableLeft="@android:drawable/ic_menu_camera"
-        android:drawablePadding="8dp"
-        android:drawableTint="@color/white"
-        android:padding="16dp"
-        android:text="Take a Photo"
-        android:textColor="@color/white"
-        android:textSize="18sp" />
-
-    <LinearLayout
+    <EditText
+        android:id="@+id/lastname_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:orientation="horizontal">
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:hint="Last Name" />
 
-        <Button
-            android:id="@+id/show_photos_button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="8dp"
-            android:layout_weight="1"
-            android:background="#546E7A"
-            android:drawableLeft="@android:drawable/ic_menu_gallery"
-            android:drawablePadding="8dp"
-            android:drawableTint="@color/white"
-            android:padding="16dp"
-            android:text="View Photos"
-            android:textColor="@color/white"
-            android:textSize="18sp" />
-
-        <Button
-            android:id="@+id/user_info_button"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="8dp"
-            android:layout_weight="1"
-            android:background="#546E7A"
-            android:drawableLeft="@android:drawable/ic_menu_info_details"
-            android:drawablePadding="8dp"
-            android:drawableTint="@color/white"
-            android:padding="16dp"
-            android:text="User Info"
-            android:textColor="@color/white"
-            android:textSize="18sp" />
-
-    </LinearLayout>
-
-
-    <Button
-        android:id="@+id/change_password_button"
-        android:layout_width="match_parent"
+    <EditText
+        android:id="@+id/email_txt"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:background="#546E7A"
-        android:padding="16dp"
-        android:text="Change Password"
-        android:textColor="@color/white"
-        android:textSize="18sp" />
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:hint="Email" />
 
-    <Button
-        android:id="@+id/logout_button"
-        android:layout_width="match_parent"
+    <EditText
+        android:id="@+id/city_txt"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:background="#546E7A"
-        android:padding="16dp"
-        android:text="Logout"
-        android:textColor="@color/white"
-        android:textSize="18sp" />
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:hint="City"/>
 
+    <EditText
+        android:id="@+id/birth_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:hint="Year of birth"/>
+    <Button
+        android:id="@+id/Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="update" />
 
 </LinearLayout>

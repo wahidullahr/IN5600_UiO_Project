@@ -1,87 +1,61 @@
 package com.example.uioproject
 
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
+
+
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
-import android.widget.TextView
+import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
-class UserInfoActivity : AppCompatActivity() {
 
-    private lateinit var sharedPreferences: SharedPreferences
-    private lateinit var nameTextView: TextView
-    private lateinit var cityTextView: TextView
-    private lateinit var birthYearTextView: TextView
-    private lateinit var changePasswordButton: Button
-    private lateinit var logoutButton: Button
-    private lateinit var takePhotoButton: Button
-    private lateinit var viewPhotoBtn: Button
+class UserInfoActivity: AppCompatActivity() {
 
-    private val apiService = RetrofitClient.instance
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user_info)
 
-        sharedPreferences = getSharedPreferences("login_preferences", Context.MODE_PRIVATE)
 
-        changePasswordButton = findViewById(R.id.change_password_button)
-        logoutButton = findViewById(R.id.logout_button)
+        val firstNameEditText = findViewById<EditText>(R.id.firstname_txt)
+        val lastNameEditText = findViewById<EditText>(R.id.lastname_txt)
+        val emailEditText = findViewById<EditText>(R.id.email_txt)
+        val cityEditText = findViewById<EditText>(R.id.city_txt)
+        val birthEditText = findViewById<EditText>(R.id.birth_txt)
+        val updateButton: Button = findViewById(R.id.Button)
 
-        getUserInfo()
 
-        changePasswordButton.setOnClickListener {
-            changePassword()
+        val sharedPreferences = getSharedPreferences("login_preferences", MODE_PRIVATE)
+        val firstName = sharedPreferences.getString("first name", "")
+        val lastName = sharedPreferences.getString("last name", "")
+        val email = sharedPreferences.getString("email", "")
+        val city = sharedPreferences.getString("Living City", "")
+        val birthYear = sharedPreferences.getString("birth year", "")
+
+
+        firstNameEditText.setText(firstName)
+        lastNameEditText.setText(lastName)
+        emailEditText.setText(email)
+        cityEditText.setText(city)
+        birthEditText.setText(birthYear)
+
+
+        updateButton.setOnClickListener {
+            val sharedPreferences = getSharedPreferences("login_preferences", MODE_PRIVATE)
+            val editor = sharedPreferences.edit()
+            editor.putString("first name", firstNameEditText.text.toString())
+            editor.putString("last name", lastNameEditText.text.toString())
+            editor.putString("email", emailEditText.text.toString())
+            editor.putString("Living City", cityEditText.text.toString())
+            editor.putString("birth year", birthEditText.text.toString())
+            editor.apply()
+
+            Toast.makeText(this@UserInfoActivity, "User info updated", Toast.LENGTH_SHORT).show()
+
         }
 
-        logoutButton.setOnClickListener {
-            logout()
-        }
-        takePhotoButton = findViewById(R.id.take_photo_button)
 
-        takePhotoButton.setOnClickListener {
-            val intent = Intent(this, TakePhotoActivity::class.java)
-            startActivity(intent)
-        }
-        viewPhotoBtn = findViewById(R.id.show_photos_button)
-
-        viewPhotoBtn.setOnClickListener {
-            val intent = Intent(this, DisplayPhotosActivity::class.java)
-            startActivity(intent)
-        }
-    }
-
-    private fun getUserInfo() {
-        val username = sharedPreferences.getString("name", "")
-        val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
-        println(username)
-       println(sharedPreferences.getString("Living City",""))
-        println(sharedPreferences.getString("Living City",""))
-        println(sharedPreferences.getString("Living City",""))
-        println(sharedPreferences.getString("Living City",""))
-        println(sharedPreferences.getString("Living City",""))
-
-    }
-
-    private fun changePassword() {
-        // Navigate to ChangePasswordActivity
-        val intent = Intent(this, ChangePasswordActivity::class.java)
-        startActivity(intent)
-    }
-
-    private fun logout() {
-        val editor = sharedPreferences.edit()
-        editor.remove("username")
-        editor.apply()
-
-        // Navigate back to LoginActivity
-        val intent = Intent(this, LoginActivity::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
     }
 }

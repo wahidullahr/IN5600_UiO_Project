@@ -2,12 +2,14 @@ package com.example.uioproject
 
 import android.content.Context
 import android.os.Bundle
+import android.os.Environment
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.File
 
 class DisplayPhotosActivity : AppCompatActivity() {
 
@@ -34,25 +36,9 @@ class DisplayPhotosActivity : AppCompatActivity() {
     }
 
     private fun loadPhotosData() {
-        val sharedPreferences = getSharedPreferences("login_preferences", Context.MODE_PRIVATE)
-        val apiService = RetrofitClient.instance
-        val username = sharedPreferences.getString("name", "").orEmpty()
+        val destinationFile = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        val pathList = destinationFile?.listFiles()?.map { it.absolutePath }
+        setupRecyclerView(pathList.orEmpty())
 
-
-        apiService.getPhotos(username).enqueue(object : Callback<List<String>> {
-            override fun onResponse(call: Call<List<String>>, response: Response<List<String>>) {
-                if (response.isSuccessful) {
-                    val photosData = response.body() ?: listOf()
-                    setupRecyclerView(photosData)
-                } else {
-                    println(response.errorBody()?.string())
-                    // Handle the error
-                }
-            }
-
-            override fun onFailure(call: Call<List<String>>, t: Throwable) {
-                // Handle the failure
-            }
-        })
     }
 }

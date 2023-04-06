@@ -51,7 +51,7 @@
             android:label="@string/title_activity_take_photo"
             android:theme="@style/Theme.Uioproject.NoActionBar" />
         <activity
-            android:name=".UserInfoActivity"
+            android:name=".HomeActivity"
             android:exported="false" />
         <activity
             android:name=".LoginActivity"
@@ -69,6 +69,10 @@
 
         <activity
             android:name=".SignUpActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".UserInfoActivity"
             android:exported="false">
         </activity>
         <activity
