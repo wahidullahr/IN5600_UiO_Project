@@ -1,75 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scroll_view"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:fillViewport="true"
     android:layout_height="match_parent"
-    tools:context=".TakePhotoActivity"
-    android:gravity="bottom|center"
-    android:orientation="vertical">
+    tools:context=".TakePhotoActivity">
 
 
-    <ImageView
-        android:id="@+id/photo_image_view"
-        android:layout_width="match_parent"
-        android:layout_height="400dp"
-        android:adjustViewBounds="true"
-        tools:src = "@tools:sample/avatars"
-        android:scaleType="centerCrop"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <EditText
-        android:id="@+id/des_photo"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:hint="Description of the Photo"
-        android:textAlignment="center"
-        app:layout_constraintBottom_toTopOf="@+id/capture_photo_button"
-        app:layout_constraintTop_toBottomOf="@id/photo_image_view" />
-
-    <EditText
-        android:id="@+id/photo_people"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:hint="People in photo"
-        android:textAlignment="center"
-        app:layout_constraintBottom_toTopOf="@+id/des_photo"/>
+        android:gravity="bottom|center"
+        android:orientation="vertical"
+        tools:context=".TakePhotoActivity">
 
 
-    <Button
-        android:id="@+id/capture_photo_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Capture Photo"
-
-        app:layout_constraintBottom_toTopOf="@+id/edit_photo_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-         />
-
-    <Button
-        android:id="@+id/edit_photo_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Edit Photo"
-        app:layout_constraintBottom_toTopOf="@+id/submit_photo_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
-        android:id="@+id/submit_photo_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Submit Photo"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-         />
+        <ImageView
+            android:id="@+id/photo_image_view"
+            android:layout_width="match_parent"
+            android:layout_height="350dp"
+            android:layout_marginTop="4dp"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@tools:sample/avatars" />
 
 
+        <EditText
+            android:id="@+id/des_photo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:hint="Description of the Photo"
+            android:textAlignment="center"
+            app:layout_constraintTop_toBottomOf="@id/capture_photo_button"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <EditText
+            android:id="@+id/photo_people"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:hint="People in photo"
+            android:textAlignment="center"
+           app:layout_constraintTop_toBottomOf="@id/des_photo" />
+
+
+        <ImageButton
+            android:id="@+id/index_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_input_add"
+            android:text="Capture Photo"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/submit_photo_button"
+            app:layout_constraintTop_toTopOf="@id/submit_photo_button"/>
+
+        <TextView
+            android:id="@+id/index_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text="0"
+            app:layout_constraintEnd_toEndOf="@id/submit_photo_button"
+            app:layout_constraintStart_toStartOf="@id/submit_photo_button"
+            app:layout_constraintBottom_toTopOf="@id/submit_photo_button"/>
+
+        <ImageButton
+            android:id="@+id/index_btn2"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/minus_btn"
+            android:text="Capture Photo"
+            app:layout_constraintHorizontal_bias="0.501"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/submit_photo_button"
+            app:layout_constraintTop_toTopOf="@id/submit_photo_button"/>
+
+
+        <Button
+            android:id="@+id/capture_photo_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Capture Photo"
+            app:layout_constraintTop_toBottomOf="@id/photo_image_view"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:layout_editor_absoluteY="31dp" />
+
+        <Button
+            android:id="@+id/submit_photo_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Submit Photo"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <fragment
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:id="@+id/map"
+            android:layout_width="0dp"
+            android:layout_height="400dp"
+            app:layout_constraintTop_toBottomOf="@id/photo_people"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/index_view"
+            android:clickable="true"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            app:layout_scrollFlags="scroll|enterAlways"
+
+            />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

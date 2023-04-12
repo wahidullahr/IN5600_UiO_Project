@@ -10,46 +10,48 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.os.SystemClock
 import android.provider.MediaStore
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.Toast
+import android.util.Base64
+import android.util.Log
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import com.example.uioproject.R
-import com.example.uioproject.RetrofitClient
+import androidx.core.net.toFile
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.yalantis.ucrop.UCrop
 import okhttp3.MediaType
-import okhttp3.RequestBody
-import android.util.Log
-
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.File
-import android.util.Base64
-import android.webkit.MimeTypeMap
-import android.widget.EditText
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import com.example.uioproject.CurrentUser.userId
-import org.w3c.dom.Text
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.FileOutputStream
 
-class TakePhotoActivity : AppCompatActivity() {
 
+class TakePhotoActivity : AppCompatActivity(), OnMapReadyCallback {
+
+
+    private var counter = 0
 
     private lateinit var capturePhotoButton: Button
-    private lateinit var editPhotoButton: Button
     private lateinit var submitPhotoButton: Button
     private lateinit var imageView: ImageView
     private var photoUri: Uri? = null
     private lateinit var descriptionPhoto: EditText
     private lateinit var people: EditText
+    private lateinit var minusbtn: ImageButton
+    private lateinit var plusBtn: ImageButton
+    private lateinit var indexview: TextView
+    private lateinit var scrollview : ScrollView
 
     companion object {
         private const val REQUEST_IMAGE_CAPTURE = 1
@@ -63,24 +65,24 @@ class TakePhotoActivity : AppCompatActivity() {
         setContentView(R.layout.activity_take_photo)
 
         capturePhotoButton = findViewById(R.id.capture_photo_button)
-        editPhotoButton = findViewById(R.id.edit_photo_button)
         submitPhotoButton = findViewById(R.id.submit_photo_button)
         imageView = findViewById(R.id.photo_image_view)
         descriptionPhoto = findViewById(R.id.des_photo)
         people = findViewById(R.id.photo_people)
+        plusBtn = findViewById(R.id.index_btn)
+        minusbtn = findViewById(R.id.index_btn2)
+        indexview = findViewById(R.id.index_view)
+        scrollview = findViewById(R.id.scroll_view)
 
 
         capturePhotoButton.setOnClickListener {
             Log.d("TakePhotoActivity", "Capture Photo button clicked")
             if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.CAMERA
+                    this, Manifest.permission.CAMERA
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.CAMERA),
-                    CAMERA_PERMISSION_REQUEST_CODE
+                    this, arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_REQUEST_CODE
                 )
             } else {
                 takePhoto()
@@ -89,10 +91,26 @@ class TakePhotoActivity : AppCompatActivity() {
             }
         }
 
-        editPhotoButton.setOnClickListener {
-            Log.d("TakePhotoActivity", "Edit Photo button clicked")
-            launchPhotoEditor()
+
+        minusbtn.setOnClickListener {
+            Log.d("TakePhotoActivity", "button clicked")
+            if (counter > 0) {
+                counter--
+                indexview.text = counter.toString()
+
+            }
         }
+        plusBtn.setOnClickListener {
+            Log.d("TakePhotoActivity", "button clicked")
+            if (counter < 4) {
+                counter++
+                indexview.text = counter.toString()
+
+            }
+        }
+
+
+
 
         submitPhotoButton.setOnClickListener {
             Log.d("TakePhotoActivity", "Submit Photo button clicked")
@@ -104,6 +122,41 @@ class TakePhotoActivity : AppCompatActivity() {
             Log.d("people in Photo", peopleInPhoto)
             submitPhoto()
 
+        }
+
+        val mapFragment = supportFragmentManager
+            .findFragmentById(R.id.map) as SupportMapFragment?
+        mapFragment!!.getMapAsync(this)
+
+
+    }
+    var location: LatLng = LatLng(0.0,0.0)
+    override fun onMapReady(googleMap: GoogleMap) {
+        googleMap.addMarker(
+            MarkerOptions()
+                .position(location)
+                .title("Marker")
+        )
+        googleMap.setOnCameraMoveListener { scrollview.requestDisallowInterceptTouchEvent(true)}
+        googleMap.setOnMapClickListener {
+            println("Print my current location" + it.latitude)
+            location = it
+            googleMap.clear()
+            googleMap.addMarker(MarkerOptions().position(it))
+
+
+
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
+            launchPhotoEditor()
+        } else if (requestCode == UCROP_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            val resultUri = UCrop.getOutput(data!!)
+            imageView.setImageURI(resultUri)
+            photoUri = resultUri
         }
     }
 
@@ -124,7 +177,20 @@ class TakePhotoActivity : AppCompatActivity() {
         }
     }
 
+    fun Uri.toFileOrNull() : File? {
+        return try {
+            this.toFile()
+        } catch (e : Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+
+
     private fun submitPhoto() {
+        if(photoUri?.toFileOrNull()?.exists()!=true)return
+
         photoUri?.let { uri ->
             println("picture")
             val file = File(uri.path)
@@ -132,22 +198,23 @@ class TakePhotoActivity : AppCompatActivity() {
             val photo = MultipartBody.Part.createFormData("photo", file.name, requestFile)
             val userId = CurrentUser.userId ?: return
             val tagId = CurrentUser.tagId ?: return
-            val fileName = System.currentTimeMillis().toString()+".jpg"
+            val fileName = System.currentTimeMillis().toString() + ".jpg"
             val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, uri)
             val baos = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
             val byteArray = baos.toByteArray()
             val base64Image = Base64.encodeToString(byteArray, Base64.DEFAULT)
 
+
             val apiService = RetrofitClient.instance
 
-            apiService.uploadPhoto(photo, userId, tagId, fileName, "base64Image")
+            apiService.uploadPhoto(photo, userId, tagId, fileName, base64Image)
                 .enqueue(object : Callback<ResponseBody> {
                     override fun onResponse(
                         call: Call<ResponseBody>, response: Response<ResponseBody>
                     ) {
                         if (response.isSuccessful) {
-                            savePhotoToLocalStorage(uri,fileName)
+                            savePhotoToLocalStorage(uri, fileName)
                             Toast.makeText(
                                 this@TakePhotoActivity,
                                 "Photo uploaded successfully",
@@ -176,36 +243,40 @@ class TakePhotoActivity : AppCompatActivity() {
         val tagId = CurrentUser.tagId ?: return
         val apiService = RetrofitClient.instance
 
-        apiService.uploadTag(userId =userId, indexUpdateTag = "1", updateTagDes =descriptionPhoto.text.toString() , updateTagLoc ="oslo" , updateTagPho = photoName, newTagPeopleName = people.text.toString())
-            .enqueue(object : Callback<ResponseBody> {
-                override fun onResponse(
-                    call: Call<ResponseBody>, response: Response<ResponseBody>
-                ) {
-                    if (response.isSuccessful) {
-                        Toast.makeText(
-                            this@TakePhotoActivity,
-                            "Photo uploaded successfully",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } else {
-                        Toast.makeText(
-                            this@TakePhotoActivity, "Failed to upload photo", Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-
-                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+        apiService.uploadTag(
+            userId = userId,
+            indexUpdateTag = indexview.text.toString(),
+            updateTagDes = descriptionPhoto.text.toString(),
+            updateTagLoc = "" + location?.latitude + "," + location?.longitude,
+            updateTagPho = photoName,
+            newTagPeopleName = people.text.toString()
+        ).enqueue(object : Callback<ResponseBody> {
+            override fun onResponse(
+                call: Call<ResponseBody>, response: Response<ResponseBody>
+            ) {
+                if (response.isSuccessful) {
                     Toast.makeText(
-                        this@TakePhotoActivity, "Error: ${t.message}", Toast.LENGTH_SHORT
+                        this@TakePhotoActivity, "Tag uploaded successfully", Toast.LENGTH_SHORT
                     ).show()
-                    t.printStackTrace()
+                } else {
+                    Toast.makeText(
+                        this@TakePhotoActivity, "Failed to upload Tag", Toast.LENGTH_SHORT
+                    ).show()
                 }
-            })
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                Toast.makeText(
+                    this@TakePhotoActivity, "Error: ${t.message}", Toast.LENGTH_SHORT
+                ).show()
+                t.printStackTrace()
+            }
+        })
 
 
     }
 
-    private fun savePhotoToLocalStorage(uri: Uri,fileName:String): File? {
+    private fun savePhotoToLocalStorage(uri: Uri, fileName: String): File? {
 
         val contentResolver: ContentResolver = contentResolver
 
@@ -222,9 +293,7 @@ class TakePhotoActivity : AppCompatActivity() {
         var len: Int
         if (inputStream != null) {
             while (inputStream.read(buffer).also { len = it } != -1) outputStream.write(
-                buffer,
-                0,
-                len
+                buffer, 0, len
             )
 
         }
@@ -236,9 +305,7 @@ class TakePhotoActivity : AppCompatActivity() {
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
@@ -251,15 +318,5 @@ class TakePhotoActivity : AppCompatActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
-            imageView.setImageURI(photoUri)
-            println(photoUri)
-        } else if (requestCode == UCROP_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            val resultUri = UCrop.getOutput(data!!)
-            imageView.setImageURI(resultUri)
-            photoUri = resultUri
-        }
-    }
+
 }

@@ -19,7 +19,6 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var usernameEditText: EditText
     private lateinit var passwordEditText: EditText
     private lateinit var loginButton: Button
-    private lateinit var signButton: Button
     private lateinit var errorMessageTextView: TextView
     private lateinit var apiService: ApiService
 
@@ -30,7 +29,6 @@ class LoginActivity : AppCompatActivity() {
         usernameEditText = findViewById(R.id.username_edit_text)
         passwordEditText = findViewById(R.id.password_edit_text)
         loginButton = findViewById(R.id.login_button)
-        signButton = findViewById(R.id.sign)
         errorMessageTextView = findViewById(R.id.error_message_text_view)
 
         apiService = RetrofitClient.instance
@@ -88,10 +86,7 @@ class LoginActivity : AppCompatActivity() {
                 }
             })
         }
-        signButton.setOnClickListener{
-             val intent = Intent(this, SignUpActivity::class.java)
-                            startActivity(intent)
-        }
+
 
         // ...
     }

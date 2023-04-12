@@ -3,6 +3,7 @@ package com.example.uioproject;
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
@@ -17,6 +18,11 @@ interface ApiService {
         @Query("username") username: String
     ): Call<Person>
 
+    @GET("getMethodMyTags")
+    fun getMethodMyTags(
+        @Query("id") id: String
+    ): Call<Tags>
+
     @Multipart
     @POST("postMethodUploadPhoto")
     fun uploadPhoto(
@@ -28,9 +34,9 @@ interface ApiService {
     ): Call<ResponseBody>
 
     @GET("getMethodDownloadPhoto")
-    fun getPhotos(
-        @Query("username") username: String
-    ): Call<List<String>>
+    suspend fun getPhoto(
+        @Query("fileName") fileName: String
+    ): Response<ResponseBody>
 
     @POST("methodPostChangePasswd")
     fun changePassword(
